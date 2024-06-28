@@ -21,6 +21,7 @@ public class WindowFrame extends JFrame {
         this.setTitle("Image Editor");
         this.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         this.setFocusable(true);
+        this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         this.mainPanel = new JPanel(new CardLayout());

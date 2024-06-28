@@ -1,9 +1,7 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseMotionListener;
+import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +23,7 @@ public class ImageEditPanel extends JPanel {
     public ImageEditPanel(int width, int height, WindowFrame window){
         this.setBounds(0,0,width,height);
         this.setLayout(new BorderLayout());
-        this.slider = new Rectangle(0,25,20,100);
+        this.slider = new Rectangle(0,0,10,100);
         this.window = window;
         this.image = null;
         this.filterChoice = new JComboBox(FILTERS);
@@ -87,12 +85,12 @@ public class ImageEditPanel extends JPanel {
                     g.drawImage(vintageNoiseFilter(), 0, 23, this.getWidth(), this.getHeight(), this);
                     break;
             }
-            g.fillRect(this.slider.x, this.slider.y, this.slider.width, this.window.getHeight());
+            g.fillRect((int) this.slider.getX(), (int) this.slider.getY()+25, (int) this.slider.getWidth(), this.window.getHeight());
         }
     }
 
     private BufferedImage negativeFilter (BufferedImage bufferedImage) {
-
+        //                 bufferedImage.getWidth()
         for (int x = 0; x < bufferedImage.getWidth(); x++) {
             for (int y = 0; y < bufferedImage.getHeight(); y++) {
                 Color currentColor = new Color(bufferedImage.getRGB(x, y));
@@ -106,7 +104,7 @@ public class ImageEditPanel extends JPanel {
         return bufferedImage;
     }
 
-    public static BufferedImage colorShiftLeftFilter(BufferedImage image) {
+    private BufferedImage colorShiftLeftFilter(BufferedImage image) {
         int width = image.getWidth();
         int height = image.getHeight();
 
@@ -138,7 +136,7 @@ public class ImageEditPanel extends JPanel {
         return shiftedImage;
     }
 
-    public static BufferedImage colorShiftRightFilter(BufferedImage image) {
+    private BufferedImage colorShiftRightFilter(BufferedImage image) {
         int width = image.getWidth();
         int height = image.getHeight();
 
@@ -170,7 +168,7 @@ public class ImageEditPanel extends JPanel {
         return shiftedImage;
     }
 
-    public static BufferedImage mirrorFilter(BufferedImage image) {
+    private BufferedImage mirrorFilter(BufferedImage image) {
         int width = image.getWidth();
         int height = image.getHeight();
 
@@ -192,7 +190,7 @@ public class ImageEditPanel extends JPanel {
         return mirroredImage;
     }
 
-    public static BufferedImage pixelateFilter(BufferedImage image) {
+    private BufferedImage pixelateFilter(BufferedImage image) {
         int width = image.getWidth();
         int height = image.getHeight();
 
@@ -216,7 +214,7 @@ public class ImageEditPanel extends JPanel {
         return pixelatedImage;
     }
 
-    public static int calculateAverageRGB(BufferedImage image, int startX, int startY, int size) {
+    private int calculateAverageRGB(BufferedImage image, int startX, int startY, int size) {
         int totalR = 0, totalG = 0, totalB = 0;
         int count = 0;
 
@@ -280,7 +278,7 @@ public class ImageEditPanel extends JPanel {
         return thickenedBorderImage;
     }
 
-    public static int calculateGradientMagnitude(BufferedImage image, int x, int y) {
+    private int calculateGradientMagnitude(BufferedImage image, int x, int y) {
         Color currentPixel = new Color(image.getRGB(x, y));
         Color nextPixel = (x < image.getWidth() - 1) ? new Color(image.getRGB(x + 1, y)) : currentPixel;
         Color bottomPixel = (y < image.getHeight() - 1) ? new Color(image.getRGB(x, y + 1)) : currentPixel;
@@ -291,7 +289,7 @@ public class ImageEditPanel extends JPanel {
         return (int) Math.sqrt(dx * dx + dy * dy);
     }
 
-    public static BufferedImage grayscaleFilter(BufferedImage original) {
+    private BufferedImage grayscaleFilter(BufferedImage original) {
         int width = original.getWidth();
         int height = original.getHeight();
         BufferedImage grayscale = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
@@ -311,7 +309,7 @@ public class ImageEditPanel extends JPanel {
         return grayscale;
     }
 
-    public static BufferedImage blackAndWhiteFilter(BufferedImage original) {
+    private BufferedImage blackAndWhiteFilter(BufferedImage original) {
         int width = original.getWidth();
         int height = original.getHeight();
         BufferedImage blackAndWhite = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_BINARY);
@@ -333,7 +331,7 @@ public class ImageEditPanel extends JPanel {
         return blackAndWhite;
     }
 
-    public static BufferedImage posterizeFilter(BufferedImage original) {
+    private BufferedImage posterizeFilter(BufferedImage original) {
         int width = original.getWidth();
         int height = original.getHeight();
         BufferedImage posterized = new BufferedImage(width, height, original.getType());
@@ -360,7 +358,7 @@ public class ImageEditPanel extends JPanel {
         return posterized;
     }
 
-    private static int posterizeColor(int colorValue, int[] thresholds) {
+    private int posterizeColor(int colorValue, int[] thresholds) {
         int newColorValue = 0;
         for (int threshold : thresholds) {
             if (colorValue < threshold) {
@@ -372,7 +370,7 @@ public class ImageEditPanel extends JPanel {
         return newColorValue;
     }
 
-    public static BufferedImage pinkTintFilter(BufferedImage image) {
+    private BufferedImage pinkTintFilter(BufferedImage image) {
         int width = image.getWidth();
         int height = image.getHeight();
 
@@ -409,7 +407,7 @@ public class ImageEditPanel extends JPanel {
         return tintedImage;
     }
 
-    public static BufferedImage applyNoiseFilter(BufferedImage image) {
+    private BufferedImage applyNoiseFilter(BufferedImage image) {
         Scanner scanner = new Scanner(System.in);
         int width = image.getWidth();
         int height = image.getHeight();
@@ -443,7 +441,7 @@ public class ImageEditPanel extends JPanel {
         return noisyImage;
     }
 
-    public static BufferedImage applySepiaFilter(BufferedImage image) {
+    private BufferedImage applySepiaFilter(BufferedImage image) {
         int width = image.getWidth();
         int height = image.getHeight();
 
@@ -478,7 +476,7 @@ public class ImageEditPanel extends JPanel {
         return sepiaImage;
     }
 
-    public BufferedImage vintageNoiseFilter() {
+    private BufferedImage vintageNoiseFilter() {
         BufferedImage tempImage = this.image;
         return applyNoiseFilter(applySepiaFilter(tempImage));
     }
