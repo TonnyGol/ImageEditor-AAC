@@ -1,118 +1,98 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Scanner;
 
 public class ImageEditPanel extends JPanel {
-    private final String[] FILTERS = {"negativeFilter", "colorShiftLeftFilter", "colorShiftRightFilter",
+    private final String[] FILTERS = {"noFilter","negativeFilter", "colorShiftLeftFilter", "colorShiftRightFilter",
             "mirrorFilter", "pixelateFilter", "bordersFilter", "grayscaleFilter", "blackAndWhiteFilter",
-            "posterizeFilter", "pinkTintFilter"};
+            "posterizeFilter", "pinkTintFilter", "noiseFilter", "sepiaFilter", "vintageFilter"};
     private WindowFrame window;
 //    private JOptionPane optionPane;
     private BufferedImage image;
     private JComboBox filterChoice;
+    private Rectangle slider;
+
 
     public ImageEditPanel(int width, int height, WindowFrame window){
         this.setBounds(0,0,width,height);
         this.setLayout(new BorderLayout());
-
+        this.slider = new Rectangle(0,25,20,100);
         this.window = window;
         this.image = null;
         this.filterChoice = new JComboBox(FILTERS);
+        this.filterChoice.setBounds(0,0,200,200);
+        this.add(filterChoice,BorderLayout.NORTH);
+        this.addMouseMotionListener(new ImageMouseListener(this.slider));
 
+        this.filterChoice.setVisible(true);
+        this.filterChoice.setFocusable(true);
         this.appLoop();
     }
 
     @Override
     public void paint(Graphics g) {
         super.paint(g);
-        if(image != null) {
-            g.drawImage(vintageNoiseFilter(), this.getWidth() / 4, 0, this.getWidth()/4 * 3, this.getHeight(), this);}
-    }
-
-    public static BufferedImage applyNoiseFilter(BufferedImage image) {
-        Scanner scanner = new Scanner(System.in);
-        int width = image.getWidth();
-        int height = image.getHeight();
-
-        BufferedImage noisyImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        Random random = new Random();
-
-        // Loop through each pixel and add random noise
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int rgb = image.getRGB(x, y);
-
-                // Extract RGB components
-                int r = (rgb >> 16) & 255;
-                int g = (rgb >> 8) & 255;
-                int b = rgb & 255;
-
-                // Generate random noise value (between -20 to 20)
-                int noise = random.nextInt(41) - 20;
-
-                // Add noise to RGB values
-                int noisyR = clamp(r + noise);
-                int noisyG = clamp(g + noise);
-                int noisyB = clamp(b + noise);
-
-                // Combine noisy RGB values
-                int noisyRGB = (noisyR << 16) | (noisyG << 8) | noisyB;
-                noisyImage.setRGB(x, y, noisyRGB);
+        if (image != null) {
+            String currentChoice = (String) Objects.requireNonNull(this.filterChoice.getSelectedItem());
+            switch (currentChoice) {
+                case "noFilter":
+                    g.drawImage(this.image, 0, 23, this.getWidth(), this.getHeight(), this);
+                    break;
+                case "negativeFilter":
+                    g.drawImage(negativeFilter(this.image), 0, 23, this.getWidth(), this.getHeight(), this);
+                    break;
+                case "colorShiftLeftFilter":
+                    g.drawImage(colorShiftLeftFilter(this.image), 0, 23, this.getWidth(), this.getHeight(), this);
+                    break;
+                case "colorShiftRightFilter":
+                    g.drawImage(colorShiftRightFilter(this.image), 0, 23, this.getWidth(), this.getHeight(), this);
+                    break;
+                case "mirrorFilter":
+                    g.drawImage(mirrorFilter(this.image), 0, 23, this.getWidth(), this.getHeight(), this);
+                    break;
+                case "pixelateFilter":
+                    g.drawImage(pixelateFilter(this.image), 0, 23, this.getWidth(), this.getHeight(), this);
+                    break;
+                case "bordersFilter":
+                    g.drawImage(bordersFilter(this.image), 0, 23, this.getWidth(), this.getHeight(), this);
+                    break;
+                case "grayscaleFilter":
+                    g.drawImage(grayscaleFilter(this.image), 0, 23, this.getWidth(), this.getHeight(), this);
+                    break;
+                case "blackAndWhiteFilter":
+                    g.drawImage(blackAndWhiteFilter(this.image), 0, 23, this.getWidth(), this.getHeight(), this);
+                    break;
+                case "posterizeFilter":
+                    g.drawImage(posterizeFilter(this.image), 0, 23, this.getWidth(), this.getHeight(), this);
+                    break;
+                case "pinkTintFilter":
+                    g.drawImage(pinkTintFilter(this.image), 0, 23, this.getWidth(), this.getHeight(), this);
+                    break;
+                case "noiseFilter":
+                    g.drawImage(applyNoiseFilter(this.image), 0, 23, this.getWidth(), this.getHeight(), this);
+                    break;
+                case "sepiaFilter":
+                    g.drawImage(applySepiaFilter(this.image), 0, 23, this.getWidth(), this.getHeight(), this);
+                    break;
+                case "vintageFilter":
+                    g.drawImage(vintageNoiseFilter(), 0, 23, this.getWidth(), this.getHeight(), this);
+                    break;
             }
+            g.fillRect(this.slider.x, this.slider.y, this.slider.width, this.window.getHeight());
         }
-        return noisyImage;
-    }
-
-    private static int clamp(int value) {
-        return Math.min(255, Math.max(0, value));
-    }
-
-    public static BufferedImage applySepiaFilter(BufferedImage image) {
-        int width = image.getWidth();
-        int height = image.getHeight();
-
-        BufferedImage sepiaImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-
-        // Loop through each pixel and apply sepia filter
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int rgb = image.getRGB(x, y);
-
-                // Extract RGB components
-                int r = (rgb >> 16) & 255;
-                int g = (rgb >> 8) & 255;
-                int b = rgb & 255;
-
-                // Calculate sepia-toned RGB values
-                int sepiaR = (int) (0.393 * r + 0.769 * g + 0.189 * b);
-                int sepiaG = (int) (0.349 * r + 0.686 * g + 0.168 * b);
-                int sepiaB = (int) (0.272 * r + 0.534 * g + 0.131 * b);
-
-                // Ensure sepia-toned RGB values are within 0-255 range
-                sepiaR = (sepiaR > 255) ? 255 : sepiaR;
-                sepiaG = (sepiaG > 255) ? 255 : sepiaG;
-                sepiaB = (sepiaB > 255) ? 255 : sepiaB;
-
-                // Combine sepia-toned RGB values
-                int sepiaRGB = (sepiaR << 16) | (sepiaG << 8) | sepiaB;
-                sepiaImage.setRGB(x, y, sepiaRGB);
-            }
-        }
-
-        return sepiaImage;
-    }
-
-    public BufferedImage vintageNoiseFilter() {
-        BufferedImage tempImage = this.image;
-        return applyNoiseFilter(applySepiaFilter(tempImage));
     }
 
     private BufferedImage negativeFilter (BufferedImage bufferedImage) {
+
         for (int x = 0; x < bufferedImage.getWidth(); x++) {
             for (int y = 0; y < bufferedImage.getHeight(); y++) {
                 Color currentColor = new Color(bufferedImage.getRGB(x, y));
@@ -146,6 +126,38 @@ public class ImageEditPanel extends JPanel {
                 int newR = g; // Green to Red
                 int newG = b; // Blue to Green
                 int newB = r; // Red to Blue
+
+                // Create a new color with the shifted RGB values
+                Color newColor = new Color(newR, newG, newB);
+
+                // Set the new color to the shifted image
+                shiftedImage.setRGB(x, y, newColor.getRGB());
+            }
+        }
+
+        return shiftedImage;
+    }
+
+    public static BufferedImage colorShiftRightFilter(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        BufferedImage shiftedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+        // Process each pixel
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                Color color = new Color(image.getRGB(x, y));
+
+                // Get individual color components
+                int r = color.getRed();
+                int g = color.getGreen();
+                int b = color.getBlue();
+
+                // Shift the colors
+                int newR = b; // Blue to Red
+                int newG = r; // Red to Green
+                int newB = g; // Green to Blue
 
                 // Create a new color with the shifted RGB values
                 Color newColor = new Color(newR, newG, newB);
@@ -279,38 +291,6 @@ public class ImageEditPanel extends JPanel {
         return (int) Math.sqrt(dx * dx + dy * dy);
     }
 
-    public static BufferedImage colorShiftRightFilter(BufferedImage image) {
-        int width = image.getWidth();
-        int height = image.getHeight();
-
-        BufferedImage shiftedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-
-        // Process each pixel
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                Color color = new Color(image.getRGB(x, y));
-
-                // Get individual color components
-                int r = color.getRed();
-                int g = color.getGreen();
-                int b = color.getBlue();
-
-                // Shift the colors
-                int newR = b; // Blue to Red
-                int newG = r; // Red to Green
-                int newB = g; // Green to Blue
-
-                // Create a new color with the shifted RGB values
-                Color newColor = new Color(newR, newG, newB);
-
-                // Set the new color to the shifted image
-                shiftedImage.setRGB(x, y, newColor.getRGB());
-            }
-        }
-
-        return shiftedImage;
-    }
-
     public static BufferedImage grayscaleFilter(BufferedImage original) {
         int width = original.getWidth();
         int height = original.getHeight();
@@ -380,6 +360,18 @@ public class ImageEditPanel extends JPanel {
         return posterized;
     }
 
+    private static int posterizeColor(int colorValue, int[] thresholds) {
+        int newColorValue = 0;
+        for (int threshold : thresholds) {
+            if (colorValue < threshold) {
+                newColorValue = threshold - 64; // Adjust to midpoint of each threshold range
+                break;
+            }
+            newColorValue = 255; // Maximum value for the color channel
+        }
+        return newColorValue;
+    }
+
     public static BufferedImage pinkTintFilter(BufferedImage image) {
         int width = image.getWidth();
         int height = image.getHeight();
@@ -417,16 +409,82 @@ public class ImageEditPanel extends JPanel {
         return tintedImage;
     }
 
-    private static int posterizeColor(int colorValue, int[] thresholds) {
-        int newColorValue = 0;
-        for (int threshold : thresholds) {
-            if (colorValue < threshold) {
-                newColorValue = threshold - 64; // Adjust to midpoint of each threshold range
-                break;
+    public static BufferedImage applyNoiseFilter(BufferedImage image) {
+        Scanner scanner = new Scanner(System.in);
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        BufferedImage noisyImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Random random = new Random();
+
+        // Loop through each pixel and add random noise
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int rgb = image.getRGB(x, y);
+
+                // Extract RGB components
+                int r = (rgb >> 16) & 255;
+                int g = (rgb >> 8) & 255;
+                int b = rgb & 255;
+
+                // Generate random noise value (between -20 to 20)
+                int noise = random.nextInt(41) - 20;
+
+                // Add noise to RGB values
+                int noisyR = clamp(r + noise);
+                int noisyG = clamp(g + noise);
+                int noisyB = clamp(b + noise);
+
+                // Combine noisy RGB values
+                int noisyRGB = (noisyR << 16) | (noisyG << 8) | noisyB;
+                noisyImage.setRGB(x, y, noisyRGB);
             }
-            newColorValue = 255; // Maximum value for the color channel
         }
-        return newColorValue;
+        return noisyImage;
+    }
+
+    public static BufferedImage applySepiaFilter(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        BufferedImage sepiaImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+        // Loop through each pixel and apply sepia filter
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int rgb = image.getRGB(x, y);
+
+                // Extract RGB components
+                int r = (rgb >> 16) & 255;
+                int g = (rgb >> 8) & 255;
+                int b = rgb & 255;
+
+                // Calculate sepia-toned RGB values
+                int sepiaR = (int) (0.393 * r + 0.769 * g + 0.189 * b);
+                int sepiaG = (int) (0.349 * r + 0.686 * g + 0.168 * b);
+                int sepiaB = (int) (0.272 * r + 0.534 * g + 0.131 * b);
+
+                // Ensure sepia-toned RGB values are within 0-255 range
+                sepiaR = (sepiaR > 255) ? 255 : sepiaR;
+                sepiaG = (sepiaG > 255) ? 255 : sepiaG;
+                sepiaB = (sepiaB > 255) ? 255 : sepiaB;
+
+                // Combine sepia-toned RGB values
+                int sepiaRGB = (sepiaR << 16) | (sepiaG << 8) | sepiaB;
+                sepiaImage.setRGB(x, y, sepiaRGB);
+            }
+        }
+
+        return sepiaImage;
+    }
+
+    public BufferedImage vintageNoiseFilter() {
+        BufferedImage tempImage = this.image;
+        return applyNoiseFilter(applySepiaFilter(tempImage));
+    }
+
+    private static int clamp(int value) {
+        return Math.min(255, Math.max(0, value));
     }
 
     private void update(){
