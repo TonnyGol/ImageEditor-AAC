@@ -8,11 +8,10 @@ import java.util.Objects;
 import java.util.Random;
 
 public class ImageEditPanel extends JPanel {
-    private final String[] FILTERS = {"noFilter", "Save Image", "negativeFilter", "colorShiftLeftFilter", "colorShiftRightFilter",
+    private final String[] FILTERS = {"noFilter", "Select new Image", "Save current Image", "negativeFilter", "colorShiftLeftFilter", "colorShiftRightFilter",
             "mirrorFilter", "pixelateFilter", "bordersFilter", "grayscaleFilter", "blackAndWhiteFilter",
             "posterizeFilter", "pinkTintFilter", "noiseFilter", "sepiaFilter", "vintageFilter"};
     private WindowFrame window;
-    //    private JOptionPane optionPane;
     private BufferedImage originalImage;
     private BufferedImage editedImage;
     private JComboBox filterChoice;
@@ -53,20 +52,25 @@ public class ImageEditPanel extends JPanel {
                 }
             }
             switch (currentChoice) {
-                case "Save Image":
-                    File outputPath = new File("C:\\EditedImages\\newImage.jpg");
+                case "Select new Image":
+                    this.window.changePanel("selectImage");
+                    //this.window.setLocationRelativeTo(null);
+                    this.filterChoice.setSelectedIndex(0);
+                    break;
+                case "Save current Image":
+                    File outputPath = new File("savedImages\\lastFilterEdit.jpg");
                     try {
                         ImageIO.write(this.editedImage, "jpg", outputPath);
                         System.exit(-1);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
-                    return;
+                    break;
                 case "noFilter":
                     g.drawImage(this.originalImage, 0, 23, this.getWidth(), this.getHeight(), this);
                     break;
                 case "negativeFilter":
-                    this.editedImage = negativeFilter(this.originalImage);
+                    //this.editedImage = negativeFilter(this.originalImage);
                     g.drawImage(negativeFilter(this.originalImage), 0, 23, this.getWidth(), this.getHeight(), this);
                     break;
                 case "colorShiftLeftFilter":
@@ -83,7 +87,7 @@ public class ImageEditPanel extends JPanel {
                     g.drawImage(pixelateFilter(this.originalImage), 0, 23, this.getWidth(), this.getHeight(), this);
                     break;
                 case "bordersFilter":
-                    g.drawImage(bordersFilter(), 0, 23, this.getWidth(), this.getHeight(), this);
+                    g.drawImage(bordersFilter(this.originalImage), 0, 23, this.getWidth(), this.getHeight(), this);
                     break;
                 case "grayscaleFilter":
                     g.drawImage(grayscaleFilter(this.originalImage), 0, 23, this.getWidth(), this.getHeight(), this);
@@ -107,43 +111,37 @@ public class ImageEditPanel extends JPanel {
                     g.drawImage(vintageNoiseFilter(), 0, 23, this.getWidth(), this.getHeight(), this);
                     break;
             }
-            if(this.slider.getX() <= -30 || this.slider.getHeight() != this.window.getHeight()){
-                this.slider.setBounds(this.originalImage.getWidth()-20, (int) this.slider.getY(), (int) this.slider.getWidth(), this.window.getHeight());
-            }
-            if(this.window.getHeight() != this.originalImage.getHeight() && this.window.getWidth() != this.originalImage.getWidth() && !this.resize) {
-                this.window.setBounds(0, 0, this.originalImage.getWidth()+20, this.originalImage.getHeight());
-                resize = true;
-            }
-//            if(this.resize && !currentChoice.equals("noFilter")){
-//                this.slider.setLocation(this.window.getLocation());
+
+//            if(this.slider.getHeight() != this.window.getHeight()){
+//                this.slider.setBounds(this.originalImage.getWidth()-20, (int) this.slider.getY(), (int) this.slider.getWidth(), this.window.getHeight());
 //            }
+//            if(this.window.getHeight() != this.originalImage.getHeight() && this.window.getWidth() != this.originalImage.getWidth() && !this.resize) {
+//                this.window.setBounds(0, 0, this.originalImage.getWidth()+20, this.originalImage.getHeight());
+//                resize = true;
+//            }
+
+            g.setColor(Color.ORANGE);
             g.fillRect((int) this.slider.getX(), (int) this.slider.getY()+23, (int) this.slider.getWidth(), this.window.getHeight());
-            //         (int) this.slider.getX()
         }
     }
 
     private BufferedImage negativeFilter (BufferedImage original) {
-        //BufferedImage negativeImage = new BufferedImage(original.getWidth(), original.getHeight(), BufferedImage.TYPE_INT_RGB);
-        //                 this.image.getWidth()
+        this.editedImage = original;
         for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x++) {
-            System.out.println("Slider X: " + this.slider.getX());
-            System.out.println("Loop X: " + x);
             for (int y = 0; y < original.getHeight(); y++) {
                 Color currentColor = new Color(original.getRGB(x, y));
                 int red = 255 - currentColor.getRed();
                 int green = 255 - currentColor.getGreen();
                 int blue = 255 - currentColor.getBlue();
                 Color updatedColor = new Color(red, green, blue);
-                original.setRGB(x, y, updatedColor.getRGB());
+                this.editedImage.setRGB(x, y, updatedColor.getRGB());
             }
         }
-        return original;
+        return this.editedImage;
     }
 
     private BufferedImage colorShiftLeftFilter(BufferedImage original) {
-        int width = original.getWidth();
-        int height = original.getHeight();
-        BufferedImage shiftedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        this.editedImage = original;
 
         // Process each pixel
         for (int y = 0; y < original.getHeight(); y++) {
@@ -164,20 +162,20 @@ public class ImageEditPanel extends JPanel {
                 Color newColor = new Color(newR, newG, newB);
 
                 // Set the new color to the shifted image
-                shiftedImage.setRGB(x, y, newColor.getRGB());
+                this.editedImage.setRGB(x, y, newColor.getRGB());
             }
         }
-        return shiftedImage;
+        return this.editedImage;
     }
 
     private BufferedImage colorShiftRightFilter(BufferedImage original) {
         int width = original.getWidth();
         int height = original.getHeight();
-        BufferedImage shiftedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        this.editedImage = original;
 
         // Process each pixel
         for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
+            for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x++) {
                 Color color = new Color(original.getRGB(x, y));
 
                 // Get individual color components
@@ -194,53 +192,57 @@ public class ImageEditPanel extends JPanel {
                 Color newColor = new Color(newR, newG, newB);
 
                 // Set the new color to the shifted image
-                shiftedImage.setRGB(x, y, newColor.getRGB());
+                this.editedImage.setRGB(x, y, newColor.getRGB());
             }
         }
-        return shiftedImage;
+        return this.editedImage;
     }
 
     private BufferedImage mirrorFilter(BufferedImage original) {
         int width = original.getWidth();
         int height = original.getHeight();
-        BufferedImage mirroredImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        this.editedImage = original;
 
         // Process each pixel
         for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
+            for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1 && x <= width/2; x++) {
                 int mirroredX = width - x - 1; // Calculate mirrored x coordinate
 
                 // Get RGB value from original image
                 int rgb = original.getRGB(x, y);
+                int mirroredRgb = original.getRGB(mirroredX, y);
 
                 // Set RGB value to mirrored image
-                mirroredImage.setRGB(mirroredX, y, rgb);
+                this.editedImage.setRGB(mirroredX, y, rgb);
+                if (mirroredX <= this.slider.x){
+                    this.editedImage.setRGB(x, y, mirroredRgb);
+                }
             }
         }
-        return mirroredImage;
+        return this.editedImage;
     }
 
     private BufferedImage pixelateFilter(BufferedImage original) {
         int width = original.getWidth();
         int height = original.getHeight();
-        BufferedImage pixelatedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        this.editedImage = original;
         final int PIXELATE_SIZE = 10;
 
         // Process each block of pixels
         for (int y = 0; y < height; y += PIXELATE_SIZE) {
-            for (int x = 0; x < width; x += PIXELATE_SIZE) {
+            for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x += PIXELATE_SIZE) {
                 // Calculate average color for the block
                 int avgRGB = calculateAverageRGB(original, x, y, PIXELATE_SIZE);
 
                 // Fill the block with the average color
                 for (int blockY = y; blockY < y + PIXELATE_SIZE && blockY < height; blockY++) {
                     for (int blockX = x; blockX < x + PIXELATE_SIZE && blockX < width; blockX++) {
-                        pixelatedImage.setRGB(blockX, blockY, avgRGB);
+                        this.editedImage.setRGB(blockX, blockY, avgRGB);
                     }
                 }
             }
         }
-        return pixelatedImage;
+        return this.editedImage;
     }
 
     private int calculateAverageRGB(BufferedImage image, int startX, int startY, int size) {
@@ -266,42 +268,31 @@ public class ImageEditPanel extends JPanel {
         return new Color(avgR, avgG, avgB).getRGB();
     }
 
-    private BufferedImage bordersFilter () {
-        int width = originalImage.getWidth();
-        int height = originalImage.getHeight();
-        BufferedImage thickenedBorderImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    private BufferedImage bordersFilter (BufferedImage original) {
+        int width = original.getWidth();
+        int height = original.getHeight();
+        this.editedImage = original;
 
         // Threshold for edge detection
         final int GRADIENT_THRESHOLD = 30; // Adjust as needed
 
         // Process each pixel
         for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
+            for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x++) {
                 // Apply edge detection (simple gradient magnitude approximation)
                 int gradientMagnitude = calculateGradientMagnitude(originalImage, x, y);
 
                 // Set border color if gradient magnitude exceeds threshold
                 if (gradientMagnitude > GRADIENT_THRESHOLD) {
                     // Highlight the pixel
-                    thickenedBorderImage.setRGB(x, y, Color.BLACK.getRGB());
-
-                    // Expand the border to make it thicker
-                    for (int dy = -2; dy <= 2; dy++) { // Expand vertically
-                        for (int dx = -2; dx <= 2; dx++) { // Expand horizontally
-                            int nx = x + dx;
-                            int ny = y + dy;
-                            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                                thickenedBorderImage.setRGB(nx, ny, Color.BLACK.getRGB());
-                            }
-                        }
-                    }
+                    this.editedImage.setRGB(x, y, Color.WHITE.getRGB());
                 } else {
                     // Keep the original pixel color
-                    thickenedBorderImage.setRGB(x, y, originalImage.getRGB(x, y));
+                    this.editedImage.setRGB(x, y, Color.BLACK.getRGB());
                 }
             }
         }
-        return thickenedBorderImage;
+        return this.editedImage;
     }
 
     private int calculateGradientMagnitude(BufferedImage original, int x, int y) {
@@ -310,38 +301,43 @@ public class ImageEditPanel extends JPanel {
         Color bottomPixel = (y < original.getHeight() - 1) ? new Color(original.getRGB(x, y + 1)) : currentPixel;
 
         // Calculate gradient magnitude (simple approximation)
-        int dx = Math.abs(nextPixel.getRed() - currentPixel.getRed());
-        int dy = Math.abs(bottomPixel.getRed() - currentPixel.getRed());
+        int dx = Math.abs(nextPixel.getRed() - currentPixel.getRed()) +
+                Math.abs(nextPixel.getGreen() - currentPixel.getGreen()) +
+                Math.abs(nextPixel.getBlue() - currentPixel.getBlue());
+
+        int dy = Math.abs(bottomPixel.getRed() - currentPixel.getRed()) +
+                Math.abs(bottomPixel.getGreen() - currentPixel.getGreen()) +
+                Math.abs(bottomPixel.getBlue() - currentPixel.getBlue());
         return (int) Math.sqrt(dx * dx + dy * dy);
     }
 
     private BufferedImage grayscaleFilter(BufferedImage original) {
         int width = original.getWidth();
         int height = original.getHeight();
-        BufferedImage grayscale = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        this.editedImage = original;
 
         for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
+            for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x++) {
                 int rgb = original.getRGB(x, y);
                 Color color = new Color(rgb);
 
                 int grayValue = (int) (0.299 * color.getRed() + 0.587 * color.getGreen() + 0.114 * color.getBlue());
                 int grayRGB = new Color(grayValue, grayValue, grayValue).getRGB();
 
-                grayscale.setRGB(x, y, grayRGB);
+                this.editedImage.setRGB(x, y, grayRGB);
             }
         }
-        return grayscale;
+        return this.editedImage;
     }
 
     private BufferedImage blackAndWhiteFilter(BufferedImage original) {
         int width = original.getWidth();
         int height = original.getHeight();
-        BufferedImage blackAndWhiteImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_BINARY);
-        final int THRESHOLD = 200;
+        this.editedImage = original;
+        final int THRESHOLD = 75;
 
         for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
+            for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x++) {
                 int rgb = original.getRGB(x, y);
                 Color color = new Color(rgb);
 
@@ -350,22 +346,22 @@ public class ImageEditPanel extends JPanel {
                 int bwValue = grayValue < THRESHOLD ? 0 : 255;
 
                 int bwRGB = new Color(bwValue, bwValue, bwValue).getRGB();
-                blackAndWhiteImage.setRGB(x, y, bwRGB);
+                this.editedImage.setRGB(x, y, bwRGB);
             }
         }
-        return blackAndWhiteImage;
+        return this.editedImage;
     }
 
     private BufferedImage posterizeFilter(BufferedImage original) {
         int width = original.getWidth();
         int height = original.getHeight();
-        BufferedImage posterImage = new BufferedImage(width, height, original.getType());
+        this.editedImage = original;
 
         // Define custom thresholds for each color channel
         final int[] COLOR_THRESHOLDS = {64, 128, 192};
 
         for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
+            for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x++) {
                 int rgb = original.getRGB(x, y);
                 Color color = new Color(rgb);
 
@@ -376,11 +372,10 @@ public class ImageEditPanel extends JPanel {
 
                 // Set the new color
                 int newColor = new Color(red, green, blue).getRGB();
-                posterImage.setRGB(x, y, newColor);
+                this.editedImage.setRGB(x, y, newColor);
             }
         }
-
-        return posterImage;
+        return this.editedImage;
     }
 
     private int posterizeColor(int colorValue, int[] thresholds) {
@@ -398,7 +393,7 @@ public class ImageEditPanel extends JPanel {
     private BufferedImage pinkTintFilter(BufferedImage original) {
         int width = original.getWidth();
         int height = original.getHeight();
-        BufferedImage tintedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        this.editedImage = original;
 
         // Pink tint RGB values
         int tintR = 255; // max red
@@ -407,7 +402,7 @@ public class ImageEditPanel extends JPanel {
 
         // Process each pixel
         for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
+            for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x++) {
                 Color color = new Color(original.getRGB(x, y));
 
                 // Get individual color components
@@ -424,21 +419,21 @@ public class ImageEditPanel extends JPanel {
                 Color newColor = new Color(mixedR, mixedG, mixedB);
 
                 // Set the new color to the tinted image
-                tintedImage.setRGB(x, y, newColor.getRGB());
+                this.editedImage.setRGB(x, y, newColor.getRGB());
             }
         }
-        return tintedImage;
+        return this.editedImage;
     }
 
     private BufferedImage applyNoiseFilter(BufferedImage original) {
         int width = original.getWidth();
         int height = original.getHeight();
-        BufferedImage noisyImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        this.editedImage = original;
         Random random = new Random();
 
         // Loop through each pixel and add random noise
         for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
+            for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x++) {
                 int rgb = original.getRGB(x, y);
 
                 // Extract RGB components
@@ -456,20 +451,20 @@ public class ImageEditPanel extends JPanel {
 
                 // Combine noisy RGB values
                 int noisyRGB = (noisyR << 16) | (noisyG << 8) | noisyB;
-                noisyImage.setRGB(x, y, noisyRGB);
+                this.editedImage.setRGB(x, y, noisyRGB);
             }
         }
-        return noisyImage;
+        return this.editedImage;
     }
 
     private BufferedImage applySepiaFilter(BufferedImage original) {
         int width = original.getWidth();
         int height = original.getHeight();
-        BufferedImage sepiaImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        this.editedImage = original;
 
         // Loop through each pixel and apply sepia filter
         for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
+            for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x++) {
                 int rgb = original.getRGB(x, y);
 
                 // Extract RGB components
@@ -489,10 +484,10 @@ public class ImageEditPanel extends JPanel {
 
                 // Combine sepia-toned RGB values
                 int sepiaRGB = (sepiaR << 16) | (sepiaG << 8) | sepiaB;
-                sepiaImage.setRGB(x, y, sepiaRGB);
+                this.editedImage.setRGB(x, y, sepiaRGB);
             }
         }
-        return sepiaImage;
+        return this.editedImage;
     }
 
     private BufferedImage vintageNoiseFilter() {
@@ -505,13 +500,25 @@ public class ImageEditPanel extends JPanel {
     }
 
     private void update(){
+
         if (!this.window.getImagePath().isEmpty()){
             try {
                 this.originalImage = ImageIO.read(new File(this.window.getImagePath()));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+            if(this.window.getHeight() != this.originalImage.getHeight() && this.window.getWidth() != this.originalImage.getWidth()) {
+                this.window.setSize(this.originalImage.getWidth()+20, this.originalImage.getHeight());
+                this.setSize(this.originalImage.getWidth()+20, this.originalImage.getHeight());
+            }
+            if(this.slider.getHeight() != this.window.getHeight()){
+                this.slider.setBounds(this.originalImage.getWidth()-20, (int) this.slider.getY(), (int) this.slider.getWidth(), this.window.getHeight());
+            }
         }
+
+
+
+
     }
 
     private void appLoop(){
