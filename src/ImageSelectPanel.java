@@ -1,55 +1,54 @@
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 
 public class ImageSelectPanel extends JPanel {
-    private final int BUTTON_WIDTH = 200;
+    private final int BUTTON_WIDTH = 250;
     private final int BUTTON_HEIGHT = 100;
-    private final int BUTTON_X = 10;
-    private final int BUTTON_Y = 20;
 
     private JTextField textPathHolder;
-    private JButton imageButton;
+    private JButton imageSelectButton;
     private WindowFrame window;
 
     public ImageSelectPanel(int width, int height, WindowFrame window) {
         this.setBounds(0, 0, width, height);
-
         this.window = window;
 
-//        this.flowLayout = new FlowLayout(FlowLayout.CENTER);
-//        this.flowLayout.setVgap(100);
-//        this.setLayout(this.flowLayout);
+        this.imageSelectButton = new JButton("Open Image");
+        this.imageSelectButton.setIcon(new ImageIcon("resources\\Images\\AddImage.png"));
+        this.imageSelectButton.setActionCommand("Select");
+        this.imageSelectButton.addActionListener(new ButtonListener(this.window));
+        this.imageSelectButton.setBounds(this.window.getWidth()/2,
+                this.window.getHeight()/4, this.BUTTON_WIDTH, this.BUTTON_HEIGHT);
+        this.imageSelectButton.setFocusable(true);
+        this.imageSelectButton.setVisible(true);
+        this.add(imageSelectButton);
 
-        this.textPathHolder = new JTextField(30);
-        this.textPathHolder.setSize(600, 400);
+        this.textPathHolder = new JTextField();
+        this.textPathHolder.setText("Or you can enter the full file path here directly");
         this.textPathHolder.setEditable(true);
-
         textPathHolder.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 loadImage();
             }
         });
-
-
         this.textPathHolder.setFocusable(true);
         this.textPathHolder.setVisible(true);
-        this.textPathHolder.setBounds(BUTTON_X, BUTTON_Y + 400, BUTTON_WIDTH, BUTTON_HEIGHT);
+        this.textPathHolder.setBounds(imageSelectButton.getX() - BUTTON_WIDTH/2,
+                imageSelectButton.getY() + 150, BUTTON_WIDTH*2, BUTTON_HEIGHT/2);
         this.add(this.textPathHolder);
 
-        this.imageButton = new JButton("Open Image");
-        this.imageButton.setIcon(new ImageIcon("resources\\Images\\AddImage.png"));
-        this.imageButton.setActionCommand("Select");
-        this.imageButton.addActionListener(new ButtonListener(this.window));
-        this.imageButton.setBounds(BUTTON_X, BUTTON_Y, this.BUTTON_WIDTH, this.BUTTON_HEIGHT);
-        this.imageButton.setFocusable(true);
-        this.imageButton.setVisible(true);
-        this.add(imageButton);
+        GridBagLayout gridBagLayout = new GridBagLayout();
+
+        GridBagConstraints selectButtonConstraints = new GridBagConstraints();
+        selectButtonConstraints.gridy = 0;
+        GridBagConstraints textConstraints = new GridBagConstraints();
+        textConstraints.gridy = 1;
+        gridBagLayout.setConstraints(this.imageSelectButton, selectButtonConstraints);
+        gridBagLayout.setConstraints(this.textPathHolder, textConstraints);
+        this.setLayout(gridBagLayout);
 
     }
 

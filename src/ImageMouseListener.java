@@ -5,11 +5,9 @@ import java.awt.event.MouseMotionListener;
 public class ImageMouseListener implements MouseMotionListener{
 
     private Rectangle slider;
-    private boolean moveSlider;
 
     public ImageMouseListener(Rectangle slider) {
         this.slider = slider;
-        this.moveSlider = false;
     }
 
     @Override

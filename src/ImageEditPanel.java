@@ -11,31 +11,32 @@ public class ImageEditPanel extends JPanel {
     private final String[] FILTERS = {"noFilter", "Select new Image", "Save current Image", "negativeFilter", "colorShiftLeftFilter", "colorShiftRightFilter",
             "mirrorFilter", "pixelateFilter", "bordersFilter", "grayscaleFilter", "blackAndWhiteFilter",
             "posterizeFilter", "pinkTintFilter", "noiseFilter", "sepiaFilter", "vintageFilter"};
+    private final int BOX_WIDTH = 200;
+    private final int BOX_HEIGHT = 200;
+
     private WindowFrame window;
     private BufferedImage originalImage;
     private BufferedImage editedImage;
     private JComboBox filterChoice;
     private Rectangle slider;
-    private boolean resize;
-
 
     public ImageEditPanel(int width, int height, WindowFrame window){
         this.setBounds(0,0,width,height);
         this.setLayout(new BorderLayout());
-        this.slider = new Rectangle(0,0,10,100);
         this.window = window;
-        this.originalImage = null;
-        this.filterChoice = new JComboBox(FILTERS);
-        this.filterChoice.setBounds(0,0,200,200);
-        this.add(filterChoice,BorderLayout.NORTH);
-        this.addMouseMotionListener(new ImageMouseListener(this.slider));
-
-        this.editedImage = null;
         this.window.setLocationRelativeTo(null);
-        this.resize = false;
 
+        this.originalImage = null;
+        this.editedImage = null;
+        this.filterChoice = new JComboBox(FILTERS);
+        this.filterChoice.setBounds(0,0,BOX_WIDTH,BOX_HEIGHT);
         this.filterChoice.setVisible(true);
         this.filterChoice.setFocusable(true);
+        this.add(filterChoice,BorderLayout.NORTH);
+
+        this.slider = new Rectangle(0,0,BOX_WIDTH/20,BOX_HEIGHT/2);
+        this.addMouseMotionListener(new ImageMouseListener(this.slider));
+
         this.appLoop();
     }
 
