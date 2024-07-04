@@ -20,7 +20,6 @@ public class ButtonListener implements ActionListener {
                 File selectedImageFile = browseImageFile.getSelectedFile();
                 String selectedImagePath = selectedImageFile.getAbsolutePath();
                 this.window.setImagePath(selectedImagePath);
-                System.out.println(selectedImagePath);
                 this.window.changePanel("editImage");
             }
         }

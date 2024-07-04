@@ -7,6 +7,7 @@ import java.io.File;
 public class ImageSelectPanel extends JPanel {
     private final int BUTTON_WIDTH = 250;
     private final int BUTTON_HEIGHT = 100;
+    private final String ADD_IMAGE_ICON_PATH = "resources\\Images\\AddImage.png";
 
     private JTextField textPathHolder;
     private JButton imageSelectButton;
@@ -17,8 +18,8 @@ public class ImageSelectPanel extends JPanel {
         this.window = window;
 
         this.imageSelectButton = new JButton("Open Image");
-        this.imageSelectButton.setIcon(new ImageIcon("resources\\Images\\AddImage.png"));
         this.imageSelectButton.setActionCommand("Select");
+        this.imageSelectButton.setIcon(new ImageIcon(ADD_IMAGE_ICON_PATH));
         this.imageSelectButton.addActionListener(new ButtonListener(this.window));
         this.imageSelectButton.setBounds(this.window.getWidth()/2,
                 this.window.getHeight()/4, this.BUTTON_WIDTH, this.BUTTON_HEIGHT);
@@ -29,11 +30,7 @@ public class ImageSelectPanel extends JPanel {
         this.textPathHolder = new JTextField();
         this.textPathHolder.setText("Or you can enter the full file path here directly");
         this.textPathHolder.setEditable(true);
-        textPathHolder.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                loadImage();
-            }
-        });
+        this.textPathHolder.addActionListener(e -> loadImage());
         this.textPathHolder.setFocusable(true);
         this.textPathHolder.setVisible(true);
         this.textPathHolder.setBounds(imageSelectButton.getX() - BUTTON_WIDTH/2,
@@ -48,8 +45,8 @@ public class ImageSelectPanel extends JPanel {
         textConstraints.gridy = 1;
         gridBagLayout.setConstraints(this.imageSelectButton, selectButtonConstraints);
         gridBagLayout.setConstraints(this.textPathHolder, textConstraints);
-        this.setLayout(gridBagLayout);
 
+        this.setLayout(gridBagLayout);
     }
 
     private void loadImage() {
