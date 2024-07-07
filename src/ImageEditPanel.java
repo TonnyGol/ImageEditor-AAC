@@ -48,28 +48,26 @@ public class ImageEditPanel extends JPanel {
         super.paint(g);
         if (originalImage != null) {
             String currentChoice = (String) Objects.requireNonNull(this.filterChoice.getSelectedItem());
-            if (currentChoice.equals("noFilter")) {
-                try {
-                    this.editedImage = ImageIO.read(new File(this.window.getImagePath()));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
             switch (currentChoice) {
                 case "Select new Image":
                     this.window.changePanel("selectImage");
                     this.filterChoice.setSelectedIndex(0);
                     break;
                 case "Save current Image":
-                    File outputPath = new File("savedImages\\lastFilterEdit.jpg");
+                    File outputPath = new File("savedImages\\lastSavedImage");
                     try {
                         ImageIO.write(this.editedImage, "jpg", outputPath);
-                        System.exit(-1);
+                        System.exit(0);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                     break;
                 case "noFilter":
+                    try {
+                        this.editedImage = ImageIO.read(new File(this.window.getImagePath()));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     g.drawImage(this.originalImage, 0, IMAGE_DEFAULT_Y, this.getWidth(), this.getHeight(), this);
                     break;
                 case "negativeFilter":
@@ -117,6 +115,7 @@ public class ImageEditPanel extends JPanel {
 
     private BufferedImage negativeFilter (BufferedImage original) {
         this.editedImage = original;
+
         for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x++) {
             for (int y = 0; y < original.getHeight(); y++) {
                 Color currentColor = new Color(original.getRGB(x, y));
@@ -137,13 +136,9 @@ public class ImageEditPanel extends JPanel {
             for (int x = 0; x < this.slider.getX() && x <= original.getWidth()-1; x++) {
                 Color color = new Color(original.getRGB(x, y));
 
-                int r = color.getRed();
-                int g = color.getGreen();
-                int b = color.getBlue();
-
-                int newR = g;
-                int newG = b;
-                int newB = r;
+                int newB = color.getRed();
+                int newR = color.getGreen();
+                int newG = color.getBlue();
 
                 Color newColor = new Color(newR, newG, newB);
 
@@ -154,20 +149,15 @@ public class ImageEditPanel extends JPanel {
     }
 
     private BufferedImage colorShiftRightFilter(BufferedImage original) {
-        int height = original.getHeight();
         this.editedImage = original;
 
-        for (int y = 0; y < height; y++) {
+        for (int y = 0; y < original.getHeight(); y++) {
             for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x++) {
                 Color color = new Color(original.getRGB(x, y));
 
-                int r = color.getRed();
-                int g = color.getGreen();
-                int b = color.getBlue();
-
-                int newR = b;
-                int newG = r;
-                int newB = g;
+                int newG = color.getRed();
+                int newB = color.getGreen();
+                int newR = color.getBlue();
 
                 Color newColor = new Color(newR, newG, newB);
 
@@ -178,13 +168,11 @@ public class ImageEditPanel extends JPanel {
     }
 
     private BufferedImage mirrorFilter(BufferedImage original) {
-        int width = original.getWidth();
-        int height = original.getHeight();
         this.editedImage = original;
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1 && x <= width/2; x++) {
-                int mirroredX = width - x - 1; // Calculate mirrored x coordinate
+        for (int y = 0; y < original.getHeight(); y++) {
+            for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1 && x <= original.getWidth()/2; x++) {
+                int mirroredX = original.getWidth() - x - 1; // Calculate mirrored x coordinate
 
                 int rgb = original.getRGB(x, y);
                 int mirroredRgb = original.getRGB(mirroredX, y);
@@ -199,16 +187,15 @@ public class ImageEditPanel extends JPanel {
     }
 
     private BufferedImage pixelateFilter(BufferedImage original) {
-        int height = original.getHeight();
         this.editedImage = original;
         final int PIXELATE_SIZE = 10;
 
-        for (int y = 0; y < height; y += PIXELATE_SIZE) {
+        for (int y = 0; y < original.getHeight(); y += PIXELATE_SIZE) {
             for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x += PIXELATE_SIZE) {
 
                 int avgRGB = calculateAverageRGB(original, x, y, PIXELATE_SIZE);
 
-                for (int blockY = y; blockY < y + PIXELATE_SIZE && blockY < height; blockY++) {
+                for (int blockY = y; blockY < y + PIXELATE_SIZE && blockY < original.getHeight(); blockY++) {
                     for (int blockX = x; blockX < x + PIXELATE_SIZE && blockX < original.getWidth(); blockX++) {
                         this.editedImage.setRGB(blockX, blockY, avgRGB);
                     }
@@ -239,12 +226,11 @@ public class ImageEditPanel extends JPanel {
     }
 
     private BufferedImage bordersFilter (BufferedImage original) {
-        int height = original.getHeight();
         this.editedImage = original;
 
         final int GRADIENT_THRESHOLD = 30;
 
-        for (int y = 0; y < height; y++) {
+        for (int y = 0; y < original.getHeight(); y++) {
             for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x++) {
 
                 int gradientMagnitude = calculateGradientMagnitude(originalImage, x, y);
@@ -275,10 +261,9 @@ public class ImageEditPanel extends JPanel {
     }
 
     private BufferedImage grayscaleFilter(BufferedImage original) {
-        int height = original.getHeight();
         this.editedImage = original;
 
-        for (int y = 0; y < height; y++) {
+        for (int y = 0; y < original.getHeight(); y++) {
             for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x++) {
                 int rgb = original.getRGB(x, y);
                 Color color = new Color(rgb);
@@ -294,12 +279,11 @@ public class ImageEditPanel extends JPanel {
 
 
     private BufferedImage posterizeFilter(BufferedImage original) {
-        int height = original.getHeight();
         this.editedImage = original;
 
         final int[] COLOR_THRESHOLDS = {64, 128, 192};
 
-        for (int y = 0; y < height; y++) {
+        for (int y = 0; y < original.getHeight(); y++) {
             for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x++) {
                 int rgb = original.getRGB(x, y);
                 Color color = new Color(rgb);
@@ -328,14 +312,12 @@ public class ImageEditPanel extends JPanel {
     }
 
     private BufferedImage pinkTintFilter(BufferedImage original) {
-        int height = original.getHeight();
         this.editedImage = original;
 
-        int tintR = MAX_COLOR_RANGE;
-        int tintG = 192;
-        int tintB = 203;
+        final int TINT_G = 192;
+        final int TINT_B = 203;
 
-        for (int y = 0; y < height; y++) {
+        for (int y = 0; y < original.getHeight(); y++) {
             for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x++) {
                 Color color = new Color(original.getRGB(x, y));
 
@@ -343,9 +325,9 @@ public class ImageEditPanel extends JPanel {
                 int g = color.getGreen();
                 int b = color.getBlue();
 
-                int mixedR = (r + tintR) / 2;
-                int mixedG = (g + tintG) / 2;
-                int mixedB = (b + tintB) / 2;
+                int mixedR = (r + MAX_COLOR_RANGE) / 2;
+                int mixedG = (g + TINT_G) / 2;
+                int mixedB = (b + TINT_B) / 2;
 
                 Color newColor = new Color(mixedR, mixedG, mixedB);
 
@@ -356,11 +338,10 @@ public class ImageEditPanel extends JPanel {
     }
 
     private BufferedImage applyNoiseFilter(BufferedImage original) {
-        int height = original.getHeight();
         this.editedImage = original;
         Random random = new Random();
 
-        for (int y = 0; y < height; y++) {
+        for (int y = 0; y < original.getHeight(); y++) {
             for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x++) {
                 int rgb = original.getRGB(x, y);
 
@@ -382,10 +363,9 @@ public class ImageEditPanel extends JPanel {
     }
 
     private BufferedImage applySepiaFilter(BufferedImage original) {
-        int height = original.getHeight();
         this.editedImage = original;
 
-        for (int y = 0; y < height; y++) {
+        for (int y = 0; y < original.getHeight(); y++) {
             for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x++) {
                 int rgb = original.getRGB(x, y);
 
@@ -425,7 +405,8 @@ public class ImageEditPanel extends JPanel {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            if(this.window.getHeight() != this.originalImage.getHeight() && this.window.getWidth() != this.originalImage.getWidth()) {
+
+            if(this.window.getHeight() != this.originalImage.getHeight() || this.window.getWidth() != this.originalImage.getWidth()) {
                 this.window.setSize(this.originalImage.getWidth()+20, this.originalImage.getHeight());
                 this.setSize(this.originalImage.getWidth()+20, this.originalImage.getHeight());
             }

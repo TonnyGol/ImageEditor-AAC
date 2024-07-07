@@ -40,6 +40,7 @@ public class WindowFrame extends JFrame {
         this.setVisible(true);
     }
 
+
     public void setImagePath(String path){
         this.imagePath = path;
     }

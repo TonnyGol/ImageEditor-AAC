@@ -7,7 +7,7 @@ import java.io.File;
 public class ImageSelectPanel extends JPanel {
     private final int BUTTON_WIDTH = 250;
     private final int BUTTON_HEIGHT = 100;
-    private final String ADD_IMAGE_ICON_PATH = "resources\\Images\\AddImage.png";
+    private final String OPEN_IMAGE_PATH = "resources\\Images\\AddImage.png";
 
     private JTextField textPathHolder;
     private JButton imageSelectButton;
@@ -18,8 +18,8 @@ public class ImageSelectPanel extends JPanel {
         this.window = window;
 
         this.imageSelectButton = new JButton("Open Image");
+        this.imageSelectButton.setIcon(new ImageIcon(OPEN_IMAGE_PATH));
         this.imageSelectButton.setActionCommand("Select");
-        this.imageSelectButton.setIcon(new ImageIcon(ADD_IMAGE_ICON_PATH));
         this.imageSelectButton.addActionListener(new ButtonListener(this.window));
         this.imageSelectButton.setBounds(this.window.getWidth()/2,
                 this.window.getHeight()/4, this.BUTTON_WIDTH, this.BUTTON_HEIGHT);
@@ -28,9 +28,9 @@ public class ImageSelectPanel extends JPanel {
         this.add(imageSelectButton);
 
         this.textPathHolder = new JTextField();
-        this.textPathHolder.setText("Or you can enter the full file path here directly");
+        this.textPathHolder.setText("You can enter the full file path here directly and press enter");
         this.textPathHolder.setEditable(true);
-        this.textPathHolder.addActionListener(e -> loadImage());
+        textPathHolder.addActionListener(e -> loadImage());
         this.textPathHolder.setFocusable(true);
         this.textPathHolder.setVisible(true);
         this.textPathHolder.setBounds(imageSelectButton.getX() - BUTTON_WIDTH/2,
@@ -38,19 +38,18 @@ public class ImageSelectPanel extends JPanel {
         this.add(this.textPathHolder);
 
         GridBagLayout gridBagLayout = new GridBagLayout();
-
         GridBagConstraints selectButtonConstraints = new GridBagConstraints();
         selectButtonConstraints.gridy = 0;
         GridBagConstraints textConstraints = new GridBagConstraints();
         textConstraints.gridy = 1;
         gridBagLayout.setConstraints(this.imageSelectButton, selectButtonConstraints);
         gridBagLayout.setConstraints(this.textPathHolder, textConstraints);
-
         this.setLayout(gridBagLayout);
+
     }
 
     private void loadImage() {
-        String path = textPathHolder.getText();
+        String path = this.textPathHolder.getText();
         File checkFile = new File(path);
         if(checkFile.exists()){
             this.window.setImagePath(path);
