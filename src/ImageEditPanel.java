@@ -54,7 +54,7 @@ public class ImageEditPanel extends JPanel {
                     this.filterChoice.setSelectedIndex(0);
                     break;
                 case "Save current Image":
-                    File outputPath = new File("savedImages\\lastSavedImage");
+                    File outputPath = new File("savedImages\\lastSavedImage.jpg");
                     try {
                         ImageIO.write(this.editedImage, "jpg", outputPath);
                         System.exit(0);
@@ -340,23 +340,24 @@ public class ImageEditPanel extends JPanel {
     private BufferedImage applyNoiseFilter(BufferedImage original) {
         this.editedImage = original;
         Random random = new Random();
+        final double NOISE_INTENSITY = 0.3;
 
         for (int y = 0; y < original.getHeight(); y++) {
             for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x++) {
-                int rgb = original.getRGB(x, y);
 
-                int r = (rgb >> 16) & MAX_COLOR_RANGE;
-                int g = (rgb >> 8) & MAX_COLOR_RANGE;
-                int b = rgb & MAX_COLOR_RANGE;
+                Color color = new Color(editedImage.getRGB(x, y), true);
 
-                int noise = random.nextInt(41) - 20;
+                int alpha = color.getAlpha();
+                int red = color.getRed();
+                int green = color.getGreen();
+                int blue = color.getBlue();
 
-                int noisyR = clamp(r + noise);
-                int noisyG = clamp(g + noise);
-                int noisyB = clamp(b + noise);
+                red = clamp((red + (int) ((random.nextFloat() - 0.5) * 255 * NOISE_INTENSITY)));
+                green = clamp((green + (int) ((random.nextFloat() - 0.5) * 255 * NOISE_INTENSITY)));
+                blue = clamp((blue + (int) ((random.nextFloat() - 0.5) * 255 * NOISE_INTENSITY)));
 
-                int noisyRGB = (noisyR << 16) | (noisyG << 8) | noisyB;
-                this.editedImage.setRGB(x, y, noisyRGB);
+                Color noisyColor = new Color(red, green, blue, alpha);
+                editedImage.setRGB(x, y, noisyColor.getRGB());
             }
         }
         return this.editedImage;
@@ -367,22 +368,22 @@ public class ImageEditPanel extends JPanel {
 
         for (int y = 0; y < original.getHeight(); y++) {
             for (int x = 0; x <= this.slider.getX() && x <= original.getWidth()-1; x++) {
-                int rgb = original.getRGB(x, y);
+                Color color = new Color(editedImage.getRGB(x, y), true);
 
-                int r = (rgb >> 16) & MAX_COLOR_RANGE;
-                int g = (rgb >> 8) & MAX_COLOR_RANGE;
-                int b = rgb & MAX_COLOR_RANGE;
+                int red = color.getRed();
+                int green = color.getGreen();
+                int blue = color.getBlue();
 
-                int sepiaR = (int) (0.393 * r + 0.769 * g + 0.189 * b);
-                int sepiaG = (int) (0.349 * r + 0.686 * g + 0.168 * b);
-                int sepiaB = (int) (0.272 * r + 0.534 * g + 0.131 * b);
+                int tr = (int) (0.393 * red + 0.769 * green + 0.189 * blue);
+                int tg = (int) (0.349 * red + 0.686 * green + 0.168 * blue);
+                int tb = (int) (0.272 * red + 0.534 * green + 0.131 * blue);
 
-                sepiaR = Math.min(sepiaR, MAX_COLOR_RANGE);
-                sepiaG = Math.min(sepiaG, MAX_COLOR_RANGE);
-                sepiaB = Math.min(sepiaB, MAX_COLOR_RANGE);
+                red = clamp(tr);
+                green = clamp(tg);
+                blue = clamp(tb);
 
-                int sepiaRGB = (sepiaR << 16) | (sepiaG << 8) | sepiaB;
-                this.editedImage.setRGB(x, y, sepiaRGB);
+                Color sepiaColor = new Color(red, green, blue, color.getAlpha());
+                editedImage.setRGB(x, y, sepiaColor.getRGB());
             }
         }
         return this.editedImage;
